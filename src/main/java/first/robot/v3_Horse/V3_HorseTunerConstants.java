@@ -1,5 +1,3 @@
 package first.robot.v3_Horse;
 
-public class V3_HorseTunerConstants {
-    
-}
+public class V3_HorseTunerConstants {}
