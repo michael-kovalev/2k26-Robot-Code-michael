@@ -10,18 +10,16 @@ import edu.wpi.team190.gompeilib.subsystems.extension.Extension;
 import edu.wpi.team190.gompeilib.subsystems.extension.ExtensionIO;
 import edu.wpi.team190.gompeilib.subsystems.generic.roller.GenericRoller;
 import edu.wpi.team190.gompeilib.subsystems.generic.roller.GenericRollerIO;
-import first.robot.shared.subsystems.intake.Intake;
 import first.robot.v3_Horse.subsystems.intake.V3_HorseIntakeConstants.ExtensionState;
 import first.robot.v3_Horse.subsystems.intake.V3_HorseIntakeConstants.RollerState;
 import java.util.function.DoubleSupplier;
 import lombok.Getter;
-
+import org.littletonrobotics.junction.Logger;
 import org.wpilib.command2.Command;
 import org.wpilib.command2.Commands;
 import org.wpilib.command2.SubsystemBase;
 import org.wpilib.units.DistanceUnit;
 import org.wpilib.units.measure.Distance;
-import org.littletonrobotics.junction.Logger;
 
 public class V3_HorseIntake extends SubsystemBase {
   @Getter private ExtensionState extensionState;
@@ -179,10 +177,11 @@ public class V3_HorseIntake extends SubsystemBase {
 
     extensionPosition = rightExtension.getExtensionPosition();
 
-    Logger.recordOutput("Intake/Roller/State", rollerState.toString()); //cause u need to give it a state not just an enum
+    Logger.recordOutput(
+        "Intake/Roller/State",
+        rollerState.toString()); // cause u need to give it a state not just an enum
     Logger.recordOutput("Intake/Extension/State", extensionState.toString());
     Logger.recordOutput("Intake/Extension/Trigger", triggerSupplier.getAsDouble());
-
   }
 
   private Distance manualAgitatePosition() {
@@ -215,7 +214,9 @@ public class V3_HorseIntake extends SubsystemBase {
 
     previousExtensionState = extensionState;
 
-    if (holdingGoal || extensionState == ExtensionState.STOW || extensionState == ExtensionState.MANUAL_EXTEND) {
+    if (holdingGoal
+        || extensionState == ExtensionState.STOW
+        || extensionState == ExtensionState.MANUAL_EXTEND) {
       GainSlot leftSlot = leftCompliant ? GainSlot.ONE : GainSlot.ZERO;
       GainSlot rightSlot = rightCompliant ? GainSlot.ONE : GainSlot.ZERO;
 
@@ -232,8 +233,6 @@ public class V3_HorseIntake extends SubsystemBase {
 
     Logger.recordOutput("Intake/Extension/Left Compliant", leftCompliant);
     Logger.recordOutput("Intake/Extension/Right Compliant", rightCompliant);
-
-
   }
 
   public Command stopRollers() {
@@ -263,97 +262,103 @@ public class V3_HorseIntake extends SubsystemBase {
   public Command setExtensionState(ExtensionState state) {
     return Commands.runOnce(() -> extensionState = state);
   }
-  
+
   public Command setRollerState(RollerState state) {
     return Commands.runOnce(() -> rollerState = state);
   }
 
   public Command releaseManualExtend() {
-    return Commands.runOnce(() -> {
-        extensionState = manualReachedStow ? ExtensionState.STOW : ExtensionState.INTAKE;
-    });
+    return Commands.runOnce(
+        () -> {
+          extensionState = manualReachedStow ? ExtensionState.STOW : ExtensionState.INTAKE;
+        });
   }
 
   public Command stopExtensions() {
-    return Commands.runOnce(() -> {
-      extensionState = ExtensionState.STOP;
-      leftExtension.setVoltageGoal(Volts.of(0));
-      rightExtension.setVoltageGoal(Volts.of(0));
-    });
+    return Commands.runOnce(
+        () -> {
+          extensionState = ExtensionState.STOP;
+          leftExtension.setVoltageGoal(Volts.of(0));
+          rightExtension.setVoltageGoal(Volts.of(0));
+        });
   }
 
   public Command resetIntakeZeroPosition() {
-    return Commands.runOnce(() -> {
-      leftExtension.setPosition(Meters.of(V3_HorseIntakeConstants.MIN_EXTENSION));
-      rightExtension.setPosition(Meters.of(V3_HorseIntakeConstants.MIN_EXTENSION));
-      extensionState = ExtensionState.STOW;
-    }).ignoringDisable(true);
+    return Commands.runOnce(
+            () -> {
+              leftExtension.setPosition(Meters.of(V3_HorseIntakeConstants.MIN_EXTENSION));
+              rightExtension.setPosition(Meters.of(V3_HorseIntakeConstants.MIN_EXTENSION));
+              extensionState = ExtensionState.STOW;
+            })
+        .ignoringDisable(true);
   }
 
   public Command slowMoveIn() {
-    return Commands.runOnce(() -> {
-      extensionState = ExtensionState.SLOW_MOVE; //setting it to a diff state so it doesnt ignore
-      leftExtension.setVoltageGoal(V3_HorseIntakeConstants.EXTENSION_SLOW_MOVE_VOLTAGE.times(-1));
-      rightExtension.setVoltageGoal(V3_HorseIntakeConstants.EXTENSION_SLOW_MOVE_VOLTAGE.times(-1));
-    }).finallyDo(
-      interrupted -> {
-        if (interrupted) 
-          extensionState = ExtensionState.STOP;
-          leftExtension.setVoltageGoal(Volts.zero());
-          rightExtension.setVoltageGoal(Volts.zero());
-      }
-    );
+    return Commands.runOnce(
+            () -> {
+              extensionState =
+                  ExtensionState.SLOW_MOVE; // setting it to a diff state so it doesnt ignore
+              leftExtension.setVoltageGoal(
+                  V3_HorseIntakeConstants.EXTENSION_SLOW_MOVE_VOLTAGE.times(-1));
+              rightExtension.setVoltageGoal(
+                  V3_HorseIntakeConstants.EXTENSION_SLOW_MOVE_VOLTAGE.times(-1));
+            })
+        .finallyDo(
+            interrupted -> {
+              if (interrupted) extensionState = ExtensionState.STOP;
+              leftExtension.setVoltageGoal(Volts.zero());
+              rightExtension.setVoltageGoal(Volts.zero());
+            });
   }
 
   public Command slowMoveOut() {
-    return Commands.runOnce(() -> {
-      extensionState = ExtensionState.SLOW_MOVE; //setting it to a diff state so it doesnt ignore
-      leftExtension.setVoltageGoal(V3_HorseIntakeConstants.EXTENSION_SLOW_MOVE_VOLTAGE);
-      rightExtension.setVoltageGoal(V3_HorseIntakeConstants.EXTENSION_SLOW_MOVE_VOLTAGE);
-    });
+    return Commands.runOnce(
+        () -> {
+          extensionState =
+              ExtensionState.SLOW_MOVE; // setting it to a diff state so it doesnt ignore
+          leftExtension.setVoltageGoal(V3_HorseIntakeConstants.EXTENSION_SLOW_MOVE_VOLTAGE);
+          rightExtension.setVoltageGoal(V3_HorseIntakeConstants.EXTENSION_SLOW_MOVE_VOLTAGE);
+        });
   }
 
   public Command zeroExtensions() {
     return Commands.sequence(
-      Commands.runOnce(() -> rollerState = RollerState.STOP),
-      Commands.runOnce(() -> extensionState = ExtensionState.ZERO),
-      Commands.parallel(
-        leftExtension.resetExtensionZero(),
-        rightExtension.resetExtensionZero()
-      )
-    );
+        Commands.runOnce(() -> rollerState = RollerState.STOP),
+        Commands.runOnce(() -> extensionState = ExtensionState.ZERO),
+        Commands.parallel(leftExtension.resetExtensionZero(), rightExtension.resetExtensionZero()));
   }
 
-  public Command squishIntake() { //agitate while shooting automatically
+  public Command squishIntake() { // agitate while shooting automatically
     return Commands.sequence(
-      Commands.runOnce(() -> {
-        if (extensionState == ExtensionState.MANUAL_EXTEND || extensionState == ExtensionState.STOW) {
-          return;
-        }
+            Commands.runOnce(
+                () -> {
+                  if (extensionState == ExtensionState.MANUAL_EXTEND
+                      || extensionState == ExtensionState.STOW) {
+                    return;
+                  }
 
-        extensionState = ExtensionState.SQUISH;
+                  extensionState = ExtensionState.SQUISH;
 
-        leftExtension.setVoltageGoal(V3_HorseIntakeConstants.SQUISH_VOLTAGE.get());
-        rightExtension.setVoltageGoal(V3_HorseIntakeConstants.SQUISH_VOLTAGE.get());
-      }
-      ),
-      Commands.waitUntil(() -> extensionState != ExtensionState.SQUISH || isNearStow(0.01)).withTimeout(5)
-    ).finallyDo(
-      () -> {
-      if (extensionState == ExtensionState.SQUISH) {
-        extensionState = ExtensionState.STOP;
+                  leftExtension.setVoltageGoal(V3_HorseIntakeConstants.SQUISH_VOLTAGE.get());
+                  rightExtension.setVoltageGoal(V3_HorseIntakeConstants.SQUISH_VOLTAGE.get());
+                }),
+            Commands.waitUntil(() -> extensionState != ExtensionState.SQUISH || isNearStow(0.01))
+                .withTimeout(5))
+        .finallyDo(
+            () -> {
+              if (extensionState == ExtensionState.SQUISH) {
+                extensionState = ExtensionState.STOP;
 
-        leftExtension.setVoltageGoal(Volts.zero());
-        rightExtension.setVoltageGoal(Volts.zero());
-        
-        extensionState = ExtensionState.STOW;
-      }
-    });
+                leftExtension.setVoltageGoal(Volts.zero());
+                rightExtension.setVoltageGoal(Volts.zero());
+
+                extensionState = ExtensionState.STOW;
+              }
+            });
   }
 
   public Command sysID() {
-    return (setExtensionState(ExtensionState.SYS_ID)).andThen(Extension.runSysIdRoutine(this, leftExtension, rightExtension));
+    return (setExtensionState(ExtensionState.SYS_ID))
+        .andThen(Extension.runSysIdRoutine(this, leftExtension, rightExtension));
   }
-
 }
-
