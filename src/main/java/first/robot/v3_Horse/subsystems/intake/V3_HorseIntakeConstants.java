@@ -13,12 +13,14 @@ import edu.wpi.team190.gompeilib.core.utility.Setpoint;
 import edu.wpi.team190.gompeilib.core.utility.control.CurrentLimits;
 import edu.wpi.team190.gompeilib.core.utility.control.Gains;
 import edu.wpi.team190.gompeilib.core.utility.control.constraints.LinearConstraints;
+import edu.wpi.team190.gompeilib.core.utility.tunable.GompeiTunables;
 import edu.wpi.team190.gompeilib.subsystems.extension.ExtensionConstants;
 import edu.wpi.team190.gompeilib.subsystems.extension.ExtensionConstants.ExtensionParameters;
 import edu.wpi.team190.gompeilib.subsystems.generic.roller.GenericRollerConstants;
 import java.util.Map;
 import org.wpilib.hardware.bus.CANPort;
 import org.wpilib.math.system.DCMotor;
+import org.wpilib.tunable.Tunable;
 import org.wpilib.units.DistanceUnit;
 import org.wpilib.units.Units;
 import org.wpilib.units.VoltageUnit;
@@ -54,6 +56,8 @@ public class V3_HorseIntakeConstants {
 
   public static final Voltage EXTENSION_VOLTAGE_OFFSET_STEP;
 
+  public static final Tunable<Voltage> SQUISH_VOLTAGE;
+
   // SETPOINT TIME
 
   public static final Map<ExtensionState, Setpoint<DistanceUnit>> LEFT_EXTENSION_STATES;
@@ -84,6 +88,8 @@ public class V3_HorseIntakeConstants {
     EXTENSION_SLOW_MOVE_VOLTAGE = Volts.of(1);
 
     EXTENSION_VOLTAGE_OFFSET_STEP = Volts.of(1);
+
+    SQUISH_VOLTAGE = GompeiTunables.value("Intake/Squish Voltage", Volts.of(-1));
 
     LEFT_EXTENSION_CONSTANTS =
         ExtensionConstants.builder()
